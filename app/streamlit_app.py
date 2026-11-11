@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import streamlit as st
 
@@ -165,7 +167,7 @@ if st.button("Classify", type="primary", disabled=not image.any()):
     try:
         with st.spinner("Sending drawing…"):
             response = requests.post(
-                "http://127.0.0.1:8000/predict",
+                os.getenv("API_URL", "http://127.0.0.1:8000/predict"),
                 json={"pixels": image.tolist()},
                 timeout=15,
             )
@@ -178,7 +180,7 @@ if st.button("Classify", type="primary", disabled=not image.any()):
             st.write("FastAPI received your drawing:", result)
 
     except requests.ConnectionError:
-        st.error("Couldn’t reach FastAPI. Check that it’s running on port 8000.")
+        st.error("Couldn’t reach FastAPI. Check that the API service is running.")
     except requests.Timeout:
         st.error("FastAPI took too long to respond.")
     except requests.HTTPError as error:

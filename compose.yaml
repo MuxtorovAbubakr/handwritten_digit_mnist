@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    expose:
+      - "8000"
+    volumes:
+      - type: bind
+        source: ./models/mnist_model.pth
+        target: /app/models/mnist_model.pth
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/docs')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      API_URL: http://api:8000/predict
+    depends_on:
+      api:
+        condition: service_healthy
